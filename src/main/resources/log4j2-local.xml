@@ -62,6 +62,10 @@
             <AppenderRef ref="AppFile"/>
         </Logger>
 
+        <Logger name="com.starline.resi.batch.*" level="debug" additivity="false">
+            <AppenderRef ref="AppFile"/>
+        </Logger>
+
         <Logger name="com.starline.resi.controller" level="debug" additivity="false">
             <AppenderRef ref="AppFile"/>
         </Logger>

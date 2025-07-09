@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -41,7 +42,8 @@ public class Resi extends BaseEntity {
     @Comment(value = "Last Checkpoint Update time after being processed by job", on = "LAST_CHECKPOINT_UPDATE")
     private LocalDateTime lastCheckpointUpdate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "COURIER_ID")
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private Courier courier;
 }

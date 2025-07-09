@@ -1,6 +1,5 @@
 package com.starline.resi.batch.launcher;
 
-import com.starline.resi.batch.config.BatchInstanceId;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +11,6 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -23,24 +21,16 @@ public class ResiProcessingJobLauncher {
     private final JobLauncher jobLauncher;
     private final Job resiProcessingJob;
     private final MeterRegistry meterRegistry;
-    private final BatchInstanceId instanceId;
 
-
-
-    @Scheduled(fixedDelay = 4, timeUnit = TimeUnit.HOURS) // 4 hours
+    @Scheduled(fixedDelay = 4, timeUnit = TimeUnit.HOURS)
     public void launchResiProcessingJob() {
         try {
             JobParameters jobParameters = new JobParametersBuilder()
-                    .addString("cutoffTime", LocalDateTime.now().minusHours(4).toString())
                     .addLong("timestamp", System.currentTimeMillis())
-                    .addString("instanceId", instanceId.getBatchIntanceId())
                     .toJobParameters();
 
             JobExecution jobExecution = jobLauncher.run(resiProcessingJob, jobParameters);
-
             log.info("Job launched with execution ID: {}", jobExecution.getId());
-
-            // Record metrics
             meterRegistry.counter("resi.job.launched").increment();
 
         } catch (Exception e) {

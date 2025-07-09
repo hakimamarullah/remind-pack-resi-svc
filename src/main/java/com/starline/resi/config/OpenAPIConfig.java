@@ -17,7 +17,7 @@ public class OpenAPIConfig {
                 .info(new Info()
                         .title(appName)
                         .version("1.0.0")
-                        .description("User Service")
+                        .description("Resi Service")
                         .contact(new Contact()
                                 .name("Hakim Amarullah")
                                 .email("hakimamarullah@gmail.com"))

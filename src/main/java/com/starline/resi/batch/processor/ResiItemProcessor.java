@@ -5,6 +5,7 @@ import com.starline.resi.dto.CheckpointUpdateResult;
 import com.starline.resi.dto.ResiUpdateResult;
 import com.starline.resi.dto.projection.ResiProjection;
 import com.starline.resi.exceptions.ApiException;
+import com.starline.resi.model.Resi;
 import com.starline.resi.service.CheckpointUpdateService;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
@@ -19,16 +20,16 @@ import java.time.LocalDateTime;
 @StepScope
 @RequiredArgsConstructor
 @Slf4j
-public class ResiItemProcessor implements ItemProcessor<ResiProjection, ResiUpdateResult> {
+public class ResiItemProcessor implements ItemProcessor<Resi, ResiUpdateResult> {
 
     private final CheckpointUpdateService checkpointUpdateService;
     private final MeterRegistry meterRegistry;
 
 
     @Override
-    public ResiUpdateResult process(ResiProjection item) throws Exception {
+    public ResiUpdateResult process(Resi item) {
         try {
-            ApiResponse<CheckpointUpdateResult> result = checkpointUpdateService.updateCheckpoint(item);
+            ApiResponse<CheckpointUpdateResult> result = checkpointUpdateService.updateCheckpoint(toResiProjection(item));
 
             if (!result.is2xxSuccessful()) {
                 throw new ApiException(result.getMessage());
@@ -53,6 +54,40 @@ public class ResiItemProcessor implements ItemProcessor<ResiProjection, ResiUpda
             meterRegistry.counter("resi.processing.failed").increment();
             throw e; // Let Spring Batch handle retry logic
         }
+    }
+
+    public ResiProjection toResiProjection(Resi item) {
+        return new ResiProjection() {
+            @Override
+            public String getTrackingNumber() {
+                return item.getTrackingNumber();
+            }
+
+            @Override
+            public Long getUserId() {
+                return item.getUserId();
+            }
+
+            @Override
+            public String getCourierCode() {
+                return item.getCourier().getCode();
+            }
+
+            @Override
+            public String getLastCheckpoint() {
+                return item.getLastCheckpoint();
+            }
+
+            @Override
+            public String getAdditionalValue1() {
+                return item.getAdditionalValue1();
+            }
+
+            @Override
+            public LocalDateTime getLastCheckpointUpdate() {
+                return item.getLastCheckpointUpdate();
+            }
+        };
     }
 }
 

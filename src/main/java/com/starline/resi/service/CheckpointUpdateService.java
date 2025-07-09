@@ -5,5 +5,5 @@ import com.starline.resi.dto.CheckpointUpdateResult;
 import com.starline.resi.dto.projection.ResiProjection;
 
 public interface CheckpointUpdateService {
-    ApiResponse<CheckpointUpdateResult> updateCheckpoint(ResiProjection resi) throws Exception;
+    ApiResponse<CheckpointUpdateResult> updateCheckpoint(ResiProjection resi);
 }
