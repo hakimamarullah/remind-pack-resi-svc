@@ -15,4 +15,8 @@ public interface ResiProjection {
     String getAdditionalValue1();
 
     LocalDateTime getLastCheckpointUpdate();
+
+    String getCourierName();
+
+    String getOriginalCheckpointTime();
 }

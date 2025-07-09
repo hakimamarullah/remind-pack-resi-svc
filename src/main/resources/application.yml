@@ -1,6 +1,8 @@
 spring:
   profiles:
     active: local
+  messages:
+    encoding: UTF-8
   batch:
     jdbc:
       initialize-schema: always

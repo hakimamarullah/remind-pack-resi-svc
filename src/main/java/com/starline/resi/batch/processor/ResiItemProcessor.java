@@ -31,7 +31,7 @@ public class ResiItemProcessor implements ItemProcessor<Resi, ResiUpdateResult> 
         try {
             ApiResponse<CheckpointUpdateResult> result = checkpointUpdateService.updateCheckpoint(toResiProjection(item));
 
-            if (!result.is2xxSuccessful()) {
+            if (result.isNot2xxSuccessful()) {
                 throw new ApiException(result.getMessage());
             }
 
@@ -40,12 +40,23 @@ public class ResiItemProcessor implements ItemProcessor<Resi, ResiUpdateResult> 
 
             if (responseData.isUpdated()) {
                 meterRegistry.counter("resi.processing.updated").increment();
-                return new ResiUpdateResult(item.getTrackingNumber(), responseData.getNewCheckpoint(),
-                        LocalDateTime.now(), true);
+                return ResiUpdateResult.builder()
+                        .trackingNumber(item.getTrackingNumber())
+                        .newCheckpoint(responseData.getNewCheckpoint())
+                        .originalCheckpointTime(responseData.getOriginalCheckpointTime())
+                        .updated(true)
+                        .processedAt(LocalDateTime.now())
+                        .build();
+
             } else {
                 meterRegistry.counter("resi.processing.skipped").increment();
-                return new ResiUpdateResult(item.getTrackingNumber(), item.getLastCheckpoint(),
-                        LocalDateTime.now(), false);
+                return ResiUpdateResult.builder()
+                        .trackingNumber(item.getTrackingNumber())
+                        .newCheckpoint(item.getLastCheckpoint())
+                        .originalCheckpointTime(item.getOriginalCheckpointTime())
+                        .updated(false)
+                        .processedAt(LocalDateTime.now())
+                        .build();
             }
 
         } catch (Exception e) {
@@ -86,6 +97,16 @@ public class ResiItemProcessor implements ItemProcessor<Resi, ResiUpdateResult> 
             @Override
             public LocalDateTime getLastCheckpointUpdate() {
                 return item.getLastCheckpointUpdate();
+            }
+
+            @Override
+            public String getCourierName() {
+                return item.getCourier().getName();
+            }
+
+            @Override
+            public String getOriginalCheckpointTime() {
+                return item.getOriginalCheckpointTime();
             }
         };
     }

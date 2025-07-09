@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class CheckpointUpdateResult {
     private String newCheckpoint;
     private boolean updated;
+    private String originalCheckpointTime;
 }

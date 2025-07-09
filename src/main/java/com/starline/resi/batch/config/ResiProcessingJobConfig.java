@@ -78,7 +78,7 @@ public class ResiProcessingJobConfig {
         return reader;
     }
 
-    @Bean
+
     public TaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(5);

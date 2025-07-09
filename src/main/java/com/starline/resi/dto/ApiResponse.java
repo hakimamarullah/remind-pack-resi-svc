@@ -60,8 +60,8 @@ public class ApiResponse<T> implements Serializable {
     public ResponseEntity<ApiResponse<T>> toResponseEntity() { return ResponseEntity.status(getHttpStatus()).body(this); }
 
     @JsonIgnore
-    public boolean is2xxSuccessful() {
-        return this.code >= 200 && this.code < 300;
+    public boolean isNot2xxSuccessful() {
+        return this.code < 200 || this.code >= 300;
     }
 }
 

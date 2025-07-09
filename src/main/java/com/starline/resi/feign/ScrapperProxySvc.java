@@ -9,7 +9,9 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "scrapper", url = "${url.svc.scrapper:http://localhost:8081}", configuration = {FeignBasicConfig.class})
+@FeignClient(name = "scrapper",
+        url = "${url.svc.scrapper:http://localhost:8081}",
+        configuration = {FeignBasicConfig.class})
 public interface ScrapperProxySvc {
 
     @PostMapping(value = "/scrapper/tracking", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

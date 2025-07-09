@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Comment;
@@ -18,7 +19,9 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-@Table(name = "RESI")
+@Table(name = "RESI", uniqueConstraints = {
+        @UniqueConstraint(name = "resi_user_unique", columnNames = {"TRACKING_NUMBER", "USER_ID"})
+})
 public class Resi extends BaseEntity {
 
     @Id
@@ -33,6 +36,10 @@ public class Resi extends BaseEntity {
     @Column(name = "LAST_CHECKPOINT", length = 800)
     @Comment(value = "Last Checkpoint of the package", on = "LAST_CHECKPOINT")
     private String lastCheckpoint;
+
+    @Column(name = "ORIGINAL_CHECKPOINT_TIME")
+    @Comment(value = "Original Checkpoint Time Based On Scrapping Result", on = "ORIGINAL_CHECKPOINT_TIME")
+    private String originalCheckpointTime;
 
     @Column(name = "ADDITIONAL_VALUE_1")
     @Comment(value = "Additional Value 1 (it can be anything. e.g. last 5 digits of phone number for JNE verification)", on = "ADDITIONAL_VALUE_1")
