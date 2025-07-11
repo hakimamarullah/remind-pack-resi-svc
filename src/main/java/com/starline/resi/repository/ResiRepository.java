@@ -17,7 +17,8 @@ public interface ResiRepository extends JpaRepository<Resi, String> {
         SELECT r.trackingNumber as trackingNumber, r.userId as userId,
         r.lastCheckpoint as lastCheckpoint, r.additionalValue1 as additionalValue1,
         r.courier.code as courierCode, r.lastCheckpointUpdate as lastCheckpointUpdate,
-        r.courier.name as courierName
+        r.courier.name as courierName, r.courier.id as courierId,
+        r.originalCheckpointTime as originalCheckpointTime
         FROM Resi r
         WHERE r.userId = :userId
     """)

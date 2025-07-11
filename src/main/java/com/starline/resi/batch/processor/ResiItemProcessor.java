@@ -108,6 +108,11 @@ public class ResiItemProcessor implements ItemProcessor<Resi, ResiUpdateResult> 
             public String getOriginalCheckpointTime() {
                 return item.getOriginalCheckpointTime();
             }
+
+            @Override
+            public Long getCourierId() {
+                return item.getCourier().getId();
+            }
         };
     }
 }

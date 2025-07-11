@@ -19,4 +19,6 @@ public interface ResiProjection {
     String getCourierName();
 
     String getOriginalCheckpointTime();
+
+    Long getCourierId();
 }
