@@ -2,6 +2,7 @@ FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /opt/app
 
 # Copy Maven wrapper and pom.xml (relative to project root)
+COPY .mvn ./.mvn
 COPY mvnw pom.xml lombok.config ./
 
 RUN chmod +x ./mvnw
