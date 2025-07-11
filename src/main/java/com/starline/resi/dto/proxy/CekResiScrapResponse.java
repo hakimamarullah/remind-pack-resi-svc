@@ -1,4 +1,4 @@
-package com.starline.resi.dto.resi;
+package com.starline.resi.dto.proxy;
 
 import lombok.Builder;
 import lombok.Data;

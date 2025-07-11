@@ -8,7 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name = "user-svc", url = "${url.svc.user:http://localhost:8080}", configuration = FeignBasicConfig.class)
+@FeignClient(name = "${srv.feign.names.user:users-svc}",  configuration = FeignBasicConfig.class)
 public interface UserProxySvc  {
 
     @GetMapping(value = "/users/info/id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

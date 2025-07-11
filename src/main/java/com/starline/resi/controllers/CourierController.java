@@ -8,6 +8,7 @@ import com.starline.resi.service.CourierService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class CourierController {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get list of courier info or filter by name")
-    public ResponseEntity<ApiResponse<PageWrapper<CourierInfo>>> findByNameOrAll(@RequestParam(required = false) String name, Pageable pageable) {
+    public ResponseEntity<ApiResponse<PageWrapper<CourierInfo>>> findByNameOrAll(@RequestParam(required = false) String name, @ParameterObject Pageable pageable) {
         if (!StringUtils.isBlank(name)) {
             return courierService.findByName(name, pageable).toResponseEntity();
         }

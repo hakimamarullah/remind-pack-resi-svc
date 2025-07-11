@@ -2,7 +2,7 @@ package com.starline.resi.service.impl;
 
 import com.starline.resi.dto.resi.AddResiRequest;
 import com.starline.resi.dto.ApiResponse;
-import com.starline.resi.dto.resi.CekResiScrapResponse;
+import com.starline.resi.dto.proxy.CekResiScrapResponse;
 import com.starline.resi.dto.resi.ResiUpdateNotification;
 import com.starline.resi.dto.proxy.ScrappingRequest;
 import com.starline.resi.dto.projection.ResiProjection;
