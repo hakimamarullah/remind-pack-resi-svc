@@ -15,7 +15,7 @@ import org.hibernate.annotations.Comment;
 @Getter
 @Setter
 @Table(name = "COURIER")
-public class Courier {
+public class Courier extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "COURIER_SEQ")
