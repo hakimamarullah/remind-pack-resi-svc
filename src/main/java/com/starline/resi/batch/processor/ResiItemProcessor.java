@@ -1,8 +1,8 @@
 package com.starline.resi.batch.processor;
 
 import com.starline.resi.dto.ApiResponse;
-import com.starline.resi.dto.CheckpointUpdateResult;
-import com.starline.resi.dto.ResiUpdateResult;
+import com.starline.resi.dto.resi.CheckpointUpdateResult;
+import com.starline.resi.dto.resi.ResiUpdateResult;
 import com.starline.resi.dto.projection.ResiProjection;
 import com.starline.resi.exceptions.ApiException;
 import com.starline.resi.model.Resi;

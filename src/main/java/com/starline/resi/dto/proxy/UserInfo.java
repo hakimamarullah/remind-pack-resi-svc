@@ -1,4 +1,4 @@
-package com.starline.resi.dto;
+package com.starline.resi.dto.proxy;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;

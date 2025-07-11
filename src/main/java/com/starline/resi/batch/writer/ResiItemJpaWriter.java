@@ -1,6 +1,6 @@
 package com.starline.resi.batch.writer;
 
-import com.starline.resi.dto.ResiUpdateResult;
+import com.starline.resi.dto.resi.ResiUpdateResult;
 import com.starline.resi.model.Resi;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;

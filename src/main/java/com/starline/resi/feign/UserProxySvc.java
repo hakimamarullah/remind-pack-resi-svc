@@ -1,7 +1,7 @@
 package com.starline.resi.feign;
 
 import com.starline.resi.dto.ApiResponse;
-import com.starline.resi.dto.UserInfo;
+import com.starline.resi.dto.proxy.UserInfo;
 import com.starline.resi.feign.config.FeignBasicConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;

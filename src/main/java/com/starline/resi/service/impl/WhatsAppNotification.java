@@ -1,8 +1,8 @@
 package com.starline.resi.service.impl;
 
 import com.starline.resi.dto.ApiResponse;
-import com.starline.resi.dto.ResiUpdateNotification;
-import com.starline.resi.dto.UserInfo;
+import com.starline.resi.dto.resi.ResiUpdateNotification;
+import com.starline.resi.dto.proxy.UserInfo;
 import com.starline.resi.exceptions.ApiException;
 import com.starline.resi.feign.UserProxySvc;
 import com.starline.resi.feign.WhatsAppProxySvc;

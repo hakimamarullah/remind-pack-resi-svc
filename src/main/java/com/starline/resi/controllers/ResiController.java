@@ -1,7 +1,7 @@
 package com.starline.resi.controllers;
 
 import com.starline.resi.annotations.LogRequestResponse;
-import com.starline.resi.dto.AddResiRequest;
+import com.starline.resi.dto.resi.AddResiRequest;
 import com.starline.resi.dto.ApiResponse;
 import com.starline.resi.dto.projection.ResiProjection;
 import com.starline.resi.service.ResiService;

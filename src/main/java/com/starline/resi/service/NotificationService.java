@@ -1,6 +1,6 @@
 package com.starline.resi.service;
 
-import com.starline.resi.dto.ResiUpdateNotification;
+import com.starline.resi.dto.resi.ResiUpdateNotification;
 
 public interface NotificationService {
 

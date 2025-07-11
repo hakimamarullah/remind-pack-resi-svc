@@ -1,4 +1,4 @@
-package com.starline.resi.dto;
+package com.starline.resi.dto.resi;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

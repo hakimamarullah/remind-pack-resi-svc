@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -17,6 +18,7 @@ import java.io.Serializable;
 public class ApiResponse<T> implements Serializable {
 
     public static final String SUCCESS = "Success";
+    public static final String FAILED = "Failed";
     @Builder.Default
     private Integer code = 200;
     private String message;
@@ -46,6 +48,15 @@ public class ApiResponse<T> implements Serializable {
 
     public static <U> ApiResponse<U> setSuccess(U data) {
         return setResponse(data, SUCCESS, 200);
+    }
+
+    public static <U> ApiResponse<PageWrapper<U>> setPagedResponse(Page<U> page) {
+        return setPagedResponse(page, 200);
+    }
+
+    public static <U> ApiResponse<PageWrapper<U>> setPagedResponse(Page<U> page, int code) {
+        var message = code < 200 || code >= 300 ? FAILED : SUCCESS;
+        return setResponse(PageWrapper.of(page), message, code);
     }
 
 

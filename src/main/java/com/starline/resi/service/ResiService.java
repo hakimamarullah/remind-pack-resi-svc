@@ -1,6 +1,6 @@
 package com.starline.resi.service;
 
-import com.starline.resi.dto.AddResiRequest;
+import com.starline.resi.dto.resi.AddResiRequest;
 import com.starline.resi.dto.ApiResponse;
 import com.starline.resi.dto.projection.ResiProjection;
 

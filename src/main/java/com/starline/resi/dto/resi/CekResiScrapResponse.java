@@ -1,4 +1,4 @@
-package com.starline.resi.dto;
+package com.starline.resi.dto.resi;
 
 import lombok.Builder;
 import lombok.Data;

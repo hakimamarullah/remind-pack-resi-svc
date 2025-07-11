@@ -1,10 +1,10 @@
 package com.starline.resi.service.impl;
 
 import com.starline.resi.dto.ApiResponse;
-import com.starline.resi.dto.CekResiScrapResponse;
-import com.starline.resi.dto.CheckpointUpdateResult;
-import com.starline.resi.dto.ResiUpdateNotification;
-import com.starline.resi.dto.ScrappingRequest;
+import com.starline.resi.dto.resi.CekResiScrapResponse;
+import com.starline.resi.dto.resi.CheckpointUpdateResult;
+import com.starline.resi.dto.resi.ResiUpdateNotification;
+import com.starline.resi.dto.proxy.ScrappingRequest;
 import com.starline.resi.dto.projection.ResiProjection;
 import com.starline.resi.feign.ScrapperProxySvc;
 import com.starline.resi.service.CheckpointUpdateService;

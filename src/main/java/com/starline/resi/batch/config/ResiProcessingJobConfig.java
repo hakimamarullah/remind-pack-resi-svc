@@ -2,7 +2,7 @@ package com.starline.resi.batch.config;
 
 import com.starline.resi.batch.processor.ResiItemProcessor;
 import com.starline.resi.batch.writer.ResiItemJpaWriter;
-import com.starline.resi.dto.ResiUpdateResult;
+import com.starline.resi.dto.resi.ResiUpdateResult;
 import com.starline.resi.model.Resi;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;

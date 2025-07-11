@@ -1,8 +1,8 @@
 package com.starline.resi.feign;
 
 import com.starline.resi.dto.ApiResponse;
-import com.starline.resi.dto.CekResiScrapResponse;
-import com.starline.resi.dto.ScrappingRequest;
+import com.starline.resi.dto.resi.CekResiScrapResponse;
+import com.starline.resi.dto.proxy.ScrappingRequest;
 import com.starline.resi.feign.config.FeignBasicConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
