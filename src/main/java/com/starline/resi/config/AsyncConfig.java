@@ -1,14 +1,15 @@
 package com.starline.resi.config;
 
+import io.opentelemetry.context.Context;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.Executor;
 
 @Configuration
 @Slf4j
@@ -16,7 +17,7 @@ public class AsyncConfig implements AsyncUncaughtExceptionHandler {
 
     @Bean
     @Primary
-    public TaskExecutor taskExecutor() {
+    public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(5);
         executor.setMaxPoolSize(10);
@@ -24,7 +25,7 @@ public class AsyncConfig implements AsyncUncaughtExceptionHandler {
         executor.setThreadNamePrefix("async-custom-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.initialize();
-        return executor;
+        return Context.taskWrapping(executor);
     }
 
     @Override
