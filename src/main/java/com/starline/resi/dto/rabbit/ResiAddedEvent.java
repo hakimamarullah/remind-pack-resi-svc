@@ -1,4 +1,4 @@
-package com.starline.resi.dto.courier;
+package com.starline.resi.dto.rabbit;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +9,11 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class CourierInfo {
+public class ResiAddedEvent {
 
-    private Long id;
-    private String code;
-    private String name;
+    private Long userId;
+
+    private String trackingNumber;
+
+    private Long courierId;
 }

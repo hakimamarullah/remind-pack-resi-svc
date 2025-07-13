@@ -4,6 +4,7 @@ import com.starline.resi.batch.processor.ResiItemProcessor;
 import com.starline.resi.batch.writer.ResiItemJpaWriter;
 import com.starline.resi.dto.resi.ResiUpdateResult;
 import com.starline.resi.model.Resi;
+import io.opentelemetry.context.Context;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -87,7 +88,7 @@ public class ResiProcessingJobConfig {
         executor.setThreadNamePrefix("resi-batch-");
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.initialize();
-        return executor;
+        return task -> Context.taskWrapping(executor).execute(task);
     }
 
     @Bean

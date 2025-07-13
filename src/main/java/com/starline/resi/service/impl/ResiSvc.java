@@ -1,11 +1,13 @@
 package com.starline.resi.service.impl;
 
-import com.starline.resi.dto.resi.AddResiRequest;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.starline.resi.dto.ApiResponse;
 import com.starline.resi.dto.proxy.CekResiScrapResponse;
-import com.starline.resi.dto.resi.ResiUpdateNotification;
 import com.starline.resi.dto.proxy.ScrappingRequest;
-import com.starline.resi.dto.projection.ResiProjection;
+import com.starline.resi.dto.resi.AddResiRequest;
+import com.starline.resi.dto.resi.ResiInfo;
+import com.starline.resi.dto.resi.ResiUpdateNotification;
 import com.starline.resi.exceptions.DataNotFoundException;
 import com.starline.resi.exceptions.DuplicateDataException;
 import com.starline.resi.exceptions.TooManyActiveResiException;
@@ -14,11 +16,16 @@ import com.starline.resi.model.Courier;
 import com.starline.resi.model.Resi;
 import com.starline.resi.repository.CourierRepository;
 import com.starline.resi.repository.ResiRepository;
-import com.starline.resi.service.NotificationService;
+import com.starline.resi.service.RabbitPublisher;
 import com.starline.resi.service.ResiService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +33,8 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@CacheConfig(cacheNames = "resi")
+@Slf4j
 public class ResiSvc implements ResiService {
 
     private final ResiRepository resiRepository;
@@ -34,14 +43,19 @@ public class ResiSvc implements ResiService {
 
     private final ScrapperProxySvc scrapperProxySvc;
 
-    private final NotificationService notificationService;
+    private final RabbitPublisher rabbitPublisher;
+
+    private final ObjectMapper mapper;
 
     @Value("${max.resi.active:5}")
     private Integer maxResiActive;
 
+
+    @Async
     @Transactional
+    @CacheEvict(key = "#payload.userId")
     @Override
-    public ApiResponse<String> addResi(AddResiRequest payload) {
+    public void addResiAsync(AddResiRequest payload) {
         if (resiRepository.countByUserId(payload.getUserId()) >= maxResiActive) {
             throw new TooManyActiveResiException();
         }
@@ -70,21 +84,26 @@ public class ResiSvc implements ResiService {
         newResi.setCourier(courier);
         resiRepository.save(newResi);
 
+
         ResiUpdateNotification notification = ResiUpdateNotification.builder()
                 .trackingNumber(payload.getTrackingNumber())
                 .userId(payload.getUserId())
                 .lastCheckpoint(responseData.getCheckpoint())
                 .lastCheckpointTime(responseData.getTimestamp())
                 .build();
-        notificationService.sendCheckpointUpdateNotification(notification);
-        return ApiResponse.setResponse("Resi added successfully", 201);
+        rabbitPublisher.publishSuccessAddResi(notification);
+
+        log.info("Successfully added resi {}", payload.getTrackingNumber());
+
     }
 
+    @Cacheable(key = "#userId")
     @Override
-    public ApiResponse<List<ResiProjection>> getResiInfoByUserId(Long userId) {
-        return ApiResponse.setSuccess(resiRepository.getResiByUserId(userId));
+    public ApiResponse<List<ResiInfo>> getResiInfoByUserId(Long userId) {
+        return ApiResponse.setSuccess(mapper.convertValue(resiRepository.getResiByUserId(userId), new TypeReference<>() {}));
     }
 
+    @CacheEvict(key = "#userId")
     @Transactional
     @Modifying
     @Override

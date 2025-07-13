@@ -5,6 +5,7 @@ import com.starline.resi.model.Resi;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ResiRepository extends JpaRepository<Resi, String> {
@@ -25,4 +26,7 @@ public interface ResiRepository extends JpaRepository<Resi, String> {
     List<ResiProjection> getResiByUserId(Long userId);
 
     void deleteByTrackingNumberAndUserId(String trackingNumber, Long userId);
+
+
+    int deleteAllByCreatedDateBefore(LocalDateTime createdDate);
 }
