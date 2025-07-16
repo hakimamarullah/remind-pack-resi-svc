@@ -90,6 +90,7 @@ public class ResiSvc implements ResiService {
                 .userId(payload.getUserId())
                 .lastCheckpoint(responseData.getCheckpoint())
                 .lastCheckpointTime(responseData.getTimestamp())
+                .courierName(courier.getName())
                 .build();
         rabbitPublisher.publishSuccessAddResi(notification);
 

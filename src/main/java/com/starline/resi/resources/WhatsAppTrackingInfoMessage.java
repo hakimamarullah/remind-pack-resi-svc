@@ -22,7 +22,7 @@ public class WhatsAppTrackingInfoMessage {
         private String courierName;
 
         Object[] toArray() {
-            return new Object[]{Objects.toString(courierName, "Uknown"), trackingNumber, currentCheckpoint, timestamp};
+            return new Object[]{trim(courierName), trim(trackingNumber), trim(currentCheckpoint), trim(timestamp)};
         }
     }
 
@@ -37,8 +37,8 @@ public class WhatsAppTrackingInfoMessage {
 
 
         Object[] toArray() {
-            return new Object[]{Objects.toString(courierName, "Uknown"), trackingNumber, currentCheckpoint,
-                    currentCheckpointTime, previousCheckpoint, previousCheckpointTime};
+            return new Object[]{trim(courierName), trim(trackingNumber), trim(currentCheckpoint),
+                    trim(currentCheckpointTime), trim(previousCheckpoint), trim(previousCheckpointTime)};
         }
     }
 
@@ -52,5 +52,9 @@ public class WhatsAppTrackingInfoMessage {
         return messageSource.getMessage("package.status.update",
                 params.toArray(),
                 LocaleContextHolder.getLocale());
+    }
+
+    private static String trim(String str) {
+        return Objects.toString(str, "N/A").trim();
     }
 }
