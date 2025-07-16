@@ -1,14 +1,14 @@
 package com.starline.resi.service.impl;
 
 import com.starline.resi.dto.ApiResponse;
+import com.starline.resi.dto.projection.ResiProjection;
 import com.starline.resi.dto.proxy.CekResiScrapResponse;
+import com.starline.resi.dto.proxy.ScrappingRequest;
 import com.starline.resi.dto.resi.CheckpointUpdateResult;
 import com.starline.resi.dto.resi.ResiUpdateNotification;
-import com.starline.resi.dto.proxy.ScrappingRequest;
-import com.starline.resi.dto.projection.ResiProjection;
 import com.starline.resi.feign.ScrapperProxySvc;
 import com.starline.resi.service.CheckpointUpdateService;
-import com.starline.resi.service.NotificationService;
+import com.starline.resi.service.RabbitPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ public class CheckpointUpdateSvc implements CheckpointUpdateService {
 
     private final ScrapperProxySvc scrapperProxySvc;
 
-    private final NotificationService notificationService;
+    private final RabbitPublisher publisher;
 
     @Override
     public ApiResponse<CheckpointUpdateResult> updateCheckpoint(ResiProjection resi) {
@@ -45,6 +45,7 @@ public class CheckpointUpdateSvc implements CheckpointUpdateService {
                 .updated(updated)
                 .originalCheckpointTime(data.getTimestamp())
                 .newCheckpoint(data.getCheckpoint())
+                .courierName(resi.getCourierName())
                 .build();
         if (updated) {
             ResiUpdateNotification notification = ResiUpdateNotification.builder()
@@ -54,8 +55,9 @@ public class CheckpointUpdateSvc implements CheckpointUpdateService {
                     .previousCheckpointTime(resi.getOriginalCheckpointTime())
                     .lastCheckpoint(data.getCheckpoint())
                     .lastCheckpointTime(data.getTimestamp())
+                    .courierName(resi.getCourierName())
                     .build();
-            notificationService.sendCheckpointUpdateNotification(notification);
+            publisher.publishSuccessAddResi(notification);
         }
         return ApiResponse.setSuccess(result);
     }

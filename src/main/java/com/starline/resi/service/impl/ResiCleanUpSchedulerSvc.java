@@ -24,7 +24,7 @@ public class ResiCleanUpSchedulerSvc implements ResiCleanUpScheduler {
 
     @Transactional
     @Modifying
-    @Scheduled(cron = "${cron.resi.cleanup:59 59 22 * * *}", zone = "Asia/Jakarta")
+    @Scheduled(cron = "${cron.resi-cleanup:59 59 22 * * *}", zone = "Asia/Jakarta")
     @Override
     public void cleanUpOldResi() {
         log.info("[✓] Starting to delete Resi entries older than {} days", maxDaysActive);

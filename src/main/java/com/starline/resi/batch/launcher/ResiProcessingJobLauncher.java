@@ -8,10 +8,9 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
-import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +21,8 @@ public class ResiProcessingJobLauncher {
     private final Job resiProcessingJob;
     private final MeterRegistry meterRegistry;
 
-    @Scheduled(fixedDelay = 4, timeUnit = TimeUnit.HOURS)
+    @Scheduled(cron = "${cron.resi-processing-job:* * */3 * * *}", zone = "Asia/Jakarta")
+    @CacheEvict(value = "resi", allEntries = true)
     public void launchResiProcessingJob() {
         try {
             JobParameters jobParameters = new JobParametersBuilder()

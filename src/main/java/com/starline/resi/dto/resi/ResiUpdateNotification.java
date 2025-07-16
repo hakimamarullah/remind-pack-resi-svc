@@ -22,4 +22,6 @@ public class ResiUpdateNotification {
     private String previousCheckpointTime;
 
     private Long userId;
+
+    private String courierName;
 }

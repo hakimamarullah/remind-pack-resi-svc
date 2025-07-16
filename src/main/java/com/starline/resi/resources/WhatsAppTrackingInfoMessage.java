@@ -17,9 +17,10 @@ public class WhatsAppTrackingInfoMessage {
         private String trackingNumber;
         private String currentCheckpoint;
         private String timestamp;
+        private String courierName;
 
         Object[] toArray() {
-            return new Object[]{trackingNumber, currentCheckpoint, timestamp};
+            return new Object[]{courierName,trackingNumber, currentCheckpoint, timestamp};
         }
     }
 
@@ -30,10 +31,12 @@ public class WhatsAppTrackingInfoMessage {
         private String previousCheckpoint;
         private String previousCheckpointTime;
         private String currentCheckpointTime;
+        private String courierName;
 
 
         Object[] toArray() {
-            return new Object[]{trackingNumber, currentCheckpoint, currentCheckpointTime, previousCheckpoint, previousCheckpointTime};
+            return new Object[]{courierName, trackingNumber, currentCheckpoint,
+                    currentCheckpointTime, previousCheckpoint, previousCheckpointTime};
         }
     }
 
