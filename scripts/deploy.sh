@@ -20,26 +20,8 @@ echo "Starting deployment..."
 echo "Image: $IMAGE_NAME"
 echo "Service: $SERVICE_NAME"
 
-# Pull the new image
-echo "Pulling new image..."
-docker pull "$IMAGE_NAME"
+cd /home/administrator/starline
 
-# Update the service with rolling update
-echo "Exporting environment variables..."
-source /home/administrator/starline/.env.local
-
-echo "Updating service..."
-docker service update \
-  --image "$IMAGE_NAME" \
-  --update-order start-first \
-  --update-parallelism 1 \
-  --update-delay 10s \
-  --update-failure-action rollback \
-  --update-monitor 30s \
-  --rollback-parallelism 1 \
-  --rollback-delay 5s \
-  --rollback-failure-action pause \
-  --rollback-monitor 30s \
-  "$SERVICE_NAME"
-
-echo "Deployment completed."
+echo "Run compose"
+pwd
+docker-compose --env-file .env.local up -d "$SERVICE_NAME"
