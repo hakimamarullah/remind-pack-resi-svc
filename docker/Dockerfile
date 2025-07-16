@@ -38,11 +38,14 @@ RUN groupadd -r spring && useradd -r -g spring spring
 
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
+ENV LOG_DIR=/opt/app/logs
 
 COPY --from=jre-build /javaruntime $JAVA_HOME
 
 # Copy jar with fixed name
 COPY --from=jre-build --chown=spring:spring /opt/app/app.jar /opt/app/app.jar
+
+RUN mkdir -p "$LOG_DIR" && chown -R spring:spring "$LOG_DIR"
 
 # Switch to non-root user
 USER spring
