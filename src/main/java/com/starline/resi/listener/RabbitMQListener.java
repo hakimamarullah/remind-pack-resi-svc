@@ -24,7 +24,7 @@ public class RabbitMQListener {
     @WithSpan
     @RabbitListener(queues = {RabbitMQConfig.RESI_SUCCESS_QUEUE})
     public void receiveMessage(ResiUpdateNotification event) {
-        log.info("Receive notification for userId: {} and tracking number: {}", event.getUserId(), event.getTrackingNumber());
+        log.info("Receive notification for userId: {} and tracking number: {} {}", event.getUserId(), event.getTrackingNumber(), event.getCourierName());
         notificationService.sendCheckpointUpdateNotification(event);
         log.info("Notification sent for userId: {} {}", event.getUserId(), event.getTrackingNumber());
     }

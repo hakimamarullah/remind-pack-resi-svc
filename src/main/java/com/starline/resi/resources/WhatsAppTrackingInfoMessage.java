@@ -6,6 +6,8 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 @Component
 @RequiredArgsConstructor
 public class WhatsAppTrackingInfoMessage {
@@ -20,7 +22,7 @@ public class WhatsAppTrackingInfoMessage {
         private String courierName;
 
         Object[] toArray() {
-            return new Object[]{courierName,trackingNumber, currentCheckpoint, timestamp};
+            return new Object[]{Objects.toString(courierName, "Uknown"), trackingNumber, currentCheckpoint, timestamp};
         }
     }
 
@@ -35,7 +37,7 @@ public class WhatsAppTrackingInfoMessage {
 
 
         Object[] toArray() {
-            return new Object[]{courierName, trackingNumber, currentCheckpoint,
+            return new Object[]{Objects.toString(courierName, "Uknown"), trackingNumber, currentCheckpoint,
                     currentCheckpointTime, previousCheckpoint, previousCheckpointTime};
         }
     }

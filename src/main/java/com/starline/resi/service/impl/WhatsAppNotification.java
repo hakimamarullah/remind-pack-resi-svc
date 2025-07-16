@@ -47,6 +47,7 @@ public class WhatsAppNotification implements NotificationService {
                     .currentCheckpointTime(payload.getLastCheckpointTime())
                     .previousCheckpoint(payload.getPreviousCheckpoint())
                     .previousCheckpointTime(payload.getPreviousCheckpointTime())
+                    .courierName(payload.getCourierName())
                     .build();
             message = waTrackingInfoMessage.getTrackingUpdateMessage(params);
         } else {
@@ -54,6 +55,7 @@ public class WhatsAppNotification implements NotificationService {
                     .trackingNumber(payload.getTrackingNumber())
                     .currentCheckpoint(payload.getLastCheckpoint())
                     .timestamp(payload.getLastCheckpointTime())
+                    .courierName(payload.getCourierName())
                     .build();
             message = waTrackingInfoMessage.getTrackingStartMessage(params);
         }
