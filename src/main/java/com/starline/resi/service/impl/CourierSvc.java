@@ -32,7 +32,7 @@ public class CourierSvc implements CourierService {
     @CacheablePage
     @Override
     public ApiResponse<PageWrapper<CourierInfo>> findByName(String name, Pageable pageable) {
-        var pageCourier = courierRepository.findByNameContainingIgnoreCase(name, pageable)
+        var pageCourier = courierRepository.findByNameContainingIgnoreCaseAndEnabledTrue(name, pageable)
                 .map(this::toCourierInfo);
         return ApiResponse.setPagedResponse(pageCourier);
     }

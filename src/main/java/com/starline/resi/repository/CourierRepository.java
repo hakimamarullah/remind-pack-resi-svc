@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface CourierRepository extends JpaRepository<Courier, Long> {
 
-     Page<Courier> findByNameContainingIgnoreCase(String name, Pageable pageable);
+     Page<Courier> findByNameContainingIgnoreCaseAndEnabledTrue(String name, Pageable pageable);
 
      Optional<Courier> findByCode(String code);
 }

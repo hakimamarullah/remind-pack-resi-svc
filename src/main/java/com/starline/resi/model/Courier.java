@@ -29,4 +29,8 @@ public class Courier extends BaseEntity {
     @Column(name = "NAME", length = 100, nullable = false)
     @Comment(value = "Courier name", on = "NAME")
     private String name;
+
+    @Column(name = "ENABLED", nullable = false)
+    @Comment(value = "Courier enabled flag", on = "ENABLED")
+    private Boolean enabled = false;
 }
