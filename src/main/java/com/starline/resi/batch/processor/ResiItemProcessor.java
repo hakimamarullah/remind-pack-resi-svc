@@ -1,13 +1,12 @@
 package com.starline.resi.batch.processor;
 
-import com.starline.resi.dto.ApiResponse;
-import com.starline.resi.dto.resi.CheckpointUpdateResult;
+import com.starline.resi.dto.rabbit.ScrappingRequestEvent;
+import com.starline.resi.dto.rabbit.enums.ScrappingType;
 import com.starline.resi.dto.resi.ResiUpdateResult;
-import com.starline.resi.dto.projection.ResiProjection;
-import com.starline.resi.exceptions.ApiException;
 import com.starline.resi.model.Resi;
-import com.starline.resi.service.CheckpointUpdateService;
+import com.starline.resi.service.RabbitPublisher;
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -22,42 +21,27 @@ import java.time.LocalDateTime;
 @Slf4j
 public class ResiItemProcessor implements ItemProcessor<Resi, ResiUpdateResult> {
 
-    private final CheckpointUpdateService checkpointUpdateService;
+    private final RabbitPublisher rabbitPublisher;
     private final MeterRegistry meterRegistry;
 
 
     @Override
-    public ResiUpdateResult process(Resi item) {
+    public ResiUpdateResult process(@NonNull Resi item) {
         try {
-            ApiResponse<CheckpointUpdateResult> result = checkpointUpdateService.updateCheckpoint(toResiProjection(item));
 
-            if (result.isNot2xxSuccessful()) {
-                throw new ApiException(result.getMessage());
-            }
+            var request = ScrappingRequestEvent.builder()
+                    .trackingNumber(item.getTrackingNumber())
+                    .courierCode(item.getCourier().getCode())
+                    .phoneLast5(item.getAdditionalValue1())
+                    .userId(item.getUserId())
+                    .additionalValue1(item.getAdditionalValue1())
+                    .type(ScrappingType.UPDATE)
+                    .build();
 
-            var responseData = result.getData();
+            rabbitPublisher.publishScrappingRequest(request);
             meterRegistry.counter("resi.processing.processed").increment();
+            log.info("Published update scrapping request for resi {}", item.getTrackingNumber());
 
-            if (responseData.isUpdated()) {
-                meterRegistry.counter("resi.processing.updated").increment();
-                return ResiUpdateResult.builder()
-                        .trackingNumber(item.getTrackingNumber())
-                        .newCheckpoint(responseData.getNewCheckpoint())
-                        .originalCheckpointTime(responseData.getOriginalCheckpointTime())
-                        .updated(true)
-                        .processedAt(LocalDateTime.now())
-                        .build();
-
-            } else {
-                meterRegistry.counter("resi.processing.skipped").increment();
-                return ResiUpdateResult.builder()
-                        .trackingNumber(item.getTrackingNumber())
-                        .newCheckpoint(item.getLastCheckpoint())
-                        .originalCheckpointTime(item.getOriginalCheckpointTime())
-                        .updated(false)
-                        .processedAt(LocalDateTime.now())
-                        .build();
-            }
 
         } catch (Exception e) {
             log.error("Error processing tracking number {}: {}",
@@ -65,55 +49,11 @@ public class ResiItemProcessor implements ItemProcessor<Resi, ResiUpdateResult> 
             meterRegistry.counter("resi.processing.failed").increment();
             throw e; // Let Spring Batch handle retry logic
         }
+        return ResiUpdateResult.builder()
+                .processedAt(LocalDateTime.now())
+                .trackingNumber(item.getTrackingNumber())
+                .build();
     }
 
-    public ResiProjection toResiProjection(Resi item) {
-        return new ResiProjection() {
-            @Override
-            public String getTrackingNumber() {
-                return item.getTrackingNumber();
-            }
-
-            @Override
-            public Long getUserId() {
-                return item.getUserId();
-            }
-
-            @Override
-            public String getCourierCode() {
-                return item.getCourier().getCode();
-            }
-
-            @Override
-            public String getLastCheckpoint() {
-                return item.getLastCheckpoint();
-            }
-
-            @Override
-            public String getAdditionalValue1() {
-                return item.getAdditionalValue1();
-            }
-
-            @Override
-            public LocalDateTime getLastCheckpointUpdate() {
-                return item.getLastCheckpointUpdate();
-            }
-
-            @Override
-            public String getCourierName() {
-                return item.getCourier().getName();
-            }
-
-            @Override
-            public String getOriginalCheckpointTime() {
-                return item.getOriginalCheckpointTime();
-            }
-
-            @Override
-            public Long getCourierId() {
-                return item.getCourier().getId();
-            }
-        };
-    }
 }
 
