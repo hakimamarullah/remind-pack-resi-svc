@@ -10,6 +10,7 @@ name: Build and Deploy to VPS
 
 on:
   push:
+    branches: [ "master" ]
     tags: [ "v*" ]  # Trigger on tags
 
 jobs:
@@ -50,10 +51,11 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+
   deploy:
     name: Deploy to VPS
     # Only deploy on master branch pushes
-    #if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master'
     environment: production
     runs-on: ubuntu-latest
     steps:
