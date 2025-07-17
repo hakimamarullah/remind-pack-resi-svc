@@ -12,4 +12,6 @@ public interface CourierRepository extends JpaRepository<Courier, Long> {
      Page<Courier> findByNameContainingIgnoreCaseAndEnabledTrue(String name, Pageable pageable);
 
      Optional<Courier> findByCode(String code);
+
+     Page<Courier> findAllByEnabledTrue(Pageable pageable);
 }

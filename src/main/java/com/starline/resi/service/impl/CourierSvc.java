@@ -24,7 +24,7 @@ public class CourierSvc implements CourierService {
     @CacheablePage
     @Override
     public ApiResponse<PageWrapper<CourierInfo>> findAll(Pageable pageable) {
-        var pageCourier = courierRepository.findAll(pageable)
+        var pageCourier = courierRepository.findAllByEnabledTrue(pageable)
                 .map(this::toCourierInfo);
         return ApiResponse.setPagedResponse(pageCourier);
     }
