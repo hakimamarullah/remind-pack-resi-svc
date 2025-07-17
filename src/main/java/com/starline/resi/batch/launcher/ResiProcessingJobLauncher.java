@@ -21,7 +21,7 @@ public class ResiProcessingJobLauncher {
     private final Job resiProcessingJob;
     private final MeterRegistry meterRegistry;
 
-    @Scheduled(fixedDelay = 180000, zone = "Asia/Jakarta")
+    @Scheduled(cron= "${cron.resi-processing-job:* * */3 * * *}", zone = "Asia/Jakarta")
     @CacheEvict(value = "resi", allEntries = true)
     public void launchResiProcessingJob() {
         try {
