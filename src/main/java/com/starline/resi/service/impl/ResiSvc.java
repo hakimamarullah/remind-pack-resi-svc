@@ -31,7 +31,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @RequiredArgsConstructor
@@ -117,17 +119,24 @@ public class ResiSvc implements ResiService {
                     .lastCheckpointTime(payload.getTimestamp())
                     .courierName(courier.get().getName())
                     .build();
+            AtomicBoolean isSendNotification = new AtomicBoolean(false);
             existingResi
                     .ifPresent(resi -> {
+                        isSendNotification.set(!Objects.equals(payload.getCheckpoint(), resi.getLastCheckpoint()));
+
                         notification.setPreviousCheckpoint(resi.getLastCheckpoint());
                         notification.setPreviousCheckpointTime(resi.getOriginalCheckpointTime());
                         resi.setLastCheckpoint(payload.getCheckpoint());
                         resi.setOriginalCheckpointTime(payload.getTimestamp());
                         resi.setLastCheckpointUpdate(LocalDateTime.now());
                         resiRepository.save(resi);
+
+
                     });
 
-            rabbitPublisher.publishResiUpdateNotification(notification);
+            if (Boolean.TRUE.equals(isSendNotification.get())) {
+                rabbitPublisher.publishResiUpdateNotification(notification);
+            }
             log.info("Successfully updated resi {}", payload.getTrackingNumber());
             return;
         }
