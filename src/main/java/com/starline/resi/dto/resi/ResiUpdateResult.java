@@ -12,10 +12,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder(toBuilder = true)
 public class ResiUpdateResult {
-    private String trackingNumber;
-    private String newCheckpoint;
-    private String originalCheckpointTime;
+
     private LocalDateTime processedAt;
-    private boolean updated;
+
+    private String trackingNumber;
+
 }
 

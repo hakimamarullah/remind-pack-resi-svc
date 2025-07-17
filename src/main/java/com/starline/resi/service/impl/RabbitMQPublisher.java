@@ -2,6 +2,7 @@ package com.starline.resi.service.impl;
 
 
 import com.starline.resi.config.RabbitMQConfig;
+import com.starline.resi.dto.rabbit.ScrappingRequestEvent;
 import com.starline.resi.dto.resi.ResiUpdateNotification;
 import com.starline.resi.service.RabbitPublisher;
 import lombok.RequiredArgsConstructor;
@@ -32,11 +33,22 @@ public class RabbitMQPublisher implements RabbitPublisher {
     @Async
     @Retryable(backoff = @Backoff(delay = 5000))
     @Override
-    public void publishSuccessAddResi(ResiUpdateNotification event) {
+    public void publishResiUpdateNotification(ResiUpdateNotification event) {
         publish(
                 RabbitMQConfig.RESI_EXCHANGE,
-                RabbitMQConfig.RESI_SUCCESS_ADD_ROUTING_KEY,
+                RabbitMQConfig.RESI_UPDATE_NOTIFICATION,
                 event
         );
+    }
+
+    @Async
+    @Retryable(backoff = @Backoff(delay = 3000), maxAttempts = 5)
+    @Override
+    public void publishScrappingRequest(ScrappingRequestEvent event) {
+         publish(
+                 RabbitMQConfig.SCRAPPING_EXCHANGE,
+                 RabbitMQConfig.SCRAPPING_REQUEST_ROUTING_KEY,
+                 event
+         );
     }
 }

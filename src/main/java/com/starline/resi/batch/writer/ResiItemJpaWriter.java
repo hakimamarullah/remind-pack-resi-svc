@@ -11,6 +11,11 @@ import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 @Component
 @RequiredArgsConstructor
 @StepScope
@@ -22,16 +27,31 @@ public class ResiItemJpaWriter implements ItemWriter<ResiUpdateResult> {
     @Override
     @Transactional
     public void write(Chunk<? extends ResiUpdateResult> items) {
+        if (items.isEmpty()) return;
+
+        // Batch fetch all Resi entities at once using IN clause to avoid N+1 query problem
+        List<String> trackingNumbers = items.getItems()
+                .stream()
+                .map(ResiUpdateResult::getTrackingNumber)
+                .toList();
+
+        List<Resi> resiList = entityManager.createQuery(
+                        "SELECT r FROM Resi r WHERE r.trackingNumber IN :ids", Resi.class)
+                .setParameter("ids", trackingNumbers)
+                .getResultList();
+
+        Map<String, Resi> resiMap = resiList.stream()
+                .collect(Collectors.toMap(Resi::getTrackingNumber, Function.identity()));
+
         for (ResiUpdateResult item : items) {
-            if (item.isUpdated()) {
-                Resi resi = entityManager.find(Resi.class, item.getTrackingNumber());
-                if (resi != null) {
-                    resi.setLastCheckpoint(item.getNewCheckpoint());
-                    resi.setLastCheckpointUpdate(item.getProcessedAt());
-                }
+            Resi resi = resiMap.get(item.getTrackingNumber());
+            if (resi != null) {
+                resi.setLastCheckpointUpdate(item.getProcessedAt());
+                resi.setCustomUpdateBy("BATCH_JOB");
             }
         }
+
         entityManager.flush();
-        entityManager.clear(); // prevent memory issues
+        entityManager.clear(); // avoid memory buildup
     }
 }

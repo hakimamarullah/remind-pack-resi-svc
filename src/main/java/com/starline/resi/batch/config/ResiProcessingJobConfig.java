@@ -1,7 +1,5 @@
 package com.starline.resi.batch.config;
 
-import com.starline.resi.batch.processor.ResiItemProcessor;
-import com.starline.resi.batch.writer.ResiItemJpaWriter;
 import com.starline.resi.dto.resi.ResiUpdateResult;
 import com.starline.resi.model.Resi;
 import io.opentelemetry.context.Context;
@@ -19,6 +17,8 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JpaPagingItemReader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,8 +36,8 @@ import java.util.Optional;
 public class ResiProcessingJobConfig {
 
     private final EntityManagerFactory entityManagerFactory;
-    private final ResiItemProcessor resiItemProcessor;
-    private final ResiItemJpaWriter resiItemJpaWriter;
+    private final ItemProcessor<Resi, ResiUpdateResult> resiItemProcessor;
+    private final ItemWriter<ResiUpdateResult> resiItemJpaWriter;
 
     @Bean
     public Job resiProcessingJob(JobRepository jobRepository,

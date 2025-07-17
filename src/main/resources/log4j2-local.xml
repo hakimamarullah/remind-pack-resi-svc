@@ -60,15 +60,15 @@
     <Loggers>
         <!-- Application loggers - to main file -->
         <Logger name="com.starline.resi" level="debug" additivity="false">
-            <AppenderRef ref="AppFile"/>
+            <AppenderRef ref="Console"/>
         </Logger>
 
         <Logger name="com.starline.resi.batch.*" level="debug" additivity="false">
-            <AppenderRef ref="AppFile"/>
+            <AppenderRef ref="Console"/>
         </Logger>
 
         <Logger name="com.starline.resi.controller" level="debug" additivity="false">
-            <AppenderRef ref="AppFile"/>
+            <AppenderRef ref="Console"/>
         </Logger>
 
         <Logger name="com.starline.resi.controller.GlobalControllerAdvice" level="debug" additivity="false">
@@ -77,25 +77,25 @@
         </Logger>
 
         <Logger name="com.starline.resi.service" level="debug" additivity="false">
-            <AppenderRef ref="AppFile"/>
+            <AppenderRef ref="Console"/>
         </Logger>
 
         <!-- Hibernate loggers - to separate hibernate file -->
-        <Logger name="org.hibernate" level="info" additivity="false">
-            <AppenderRef ref="HibernateFile"/>
-        </Logger>
+<!--        <Logger name="org.hibernate" level="info" additivity="false">-->
+<!--            <AppenderRef ref="HibernateFile"/>-->
+<!--        </Logger>-->
 
-        <Logger name="org.hibernate.SQL" level="debug" additivity="false">
-            <AppenderRef ref="HibernateFile"/>
-        </Logger>
+<!--        <Logger name="org.hibernate.SQL" level="debug" additivity="false">-->
+<!--            <AppenderRef ref="HibernateFile"/>-->
+<!--        </Logger>-->
 
-        <Logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="trace" additivity="false">
-            <AppenderRef ref="HibernateFile"/>
-        </Logger>
+<!--        <Logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="trace" additivity="false">-->
+<!--            <AppenderRef ref="HibernateFile"/>-->
+<!--        </Logger>-->
 
-        <Logger name="org.hibernate.type.descriptor.sql.BasicExtractor" level="trace" additivity="false">
-            <AppenderRef ref="HibernateFile"/>
-        </Logger>
+<!--        <Logger name="org.hibernate.type.descriptor.sql.BasicExtractor" level="trace" additivity="false">-->
+<!--            <AppenderRef ref="HibernateFile"/>-->
+<!--        </Logger>-->
 
         <!-- Spring Boot loggers - console and main file -->
         <Logger name="org.springframework.boot" level="info" additivity="false">

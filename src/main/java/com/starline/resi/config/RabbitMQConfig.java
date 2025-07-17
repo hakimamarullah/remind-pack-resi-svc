@@ -19,20 +19,29 @@ public class RabbitMQConfig {
 
     // Exchange names
     public static final String RESI_EXCHANGE = "resi.exchange";
+    public static final String SCRAPPING_EXCHANGE = "scrapping.exchange";
 
 
     // Queue names
     public static final String RESI_SUCCESS_QUEUE = "resi.success.queue";
+    public static final String SCRAPPING_REQUEST_QUEUE = "scrapping.request.queue";
+    public static final String SCRAPPING_DONE_QUEUE = "scrapping.done.queue";
 
 
     // Routing keys
-    public static final String RESI_SUCCESS_ADD_ROUTING_KEY = "resi.success.added";
+    public static final String RESI_UPDATE_NOTIFICATION = "resi.update.notification";
+    public static final String SCRAPPING_REQUEST_ROUTING_KEY = "scrapping.request";
 
 
     // Exchanges
     @Bean
     public TopicExchange resiExchange() {
         return new TopicExchange(RESI_EXCHANGE);
+    }
+
+    @Bean
+    public TopicExchange scrappingExchange() {
+        return new TopicExchange(SCRAPPING_EXCHANGE);
     }
 
 
@@ -44,6 +53,13 @@ public class RabbitMQConfig {
                 .build();
     }
 
+    @Bean
+    public Queue scrappingRequestQueue() {
+        return QueueBuilder.durable(SCRAPPING_REQUEST_QUEUE)
+                .withArgument("x-message-ttl", 300000) // 5 minutes TTL
+                .build();
+    }
+
 
     // Bindings
     @Bean
@@ -51,7 +67,15 @@ public class RabbitMQConfig {
         return BindingBuilder
                 .bind(resiSuccessQueue())
                 .to(resiExchange())
-                .with(RESI_SUCCESS_ADD_ROUTING_KEY);
+                .with(RESI_UPDATE_NOTIFICATION);
+    }
+
+    @Bean
+    public Binding scrappingRequestBinding() {
+        return BindingBuilder
+                .bind(scrappingRequestQueue())
+                .to(scrappingExchange())
+                .with(SCRAPPING_REQUEST_ROUTING_KEY);
     }
 
 

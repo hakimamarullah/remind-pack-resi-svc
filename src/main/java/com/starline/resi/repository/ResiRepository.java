@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface ResiRepository extends JpaRepository<Resi, String> {
 
@@ -29,4 +30,6 @@ public interface ResiRepository extends JpaRepository<Resi, String> {
 
 
     int deleteAllByCreatedDateBefore(LocalDateTime createdDate);
+
+    Optional<Resi> findByTrackingNumberAndUserId(String trackingNumber, Long userId);
 }
