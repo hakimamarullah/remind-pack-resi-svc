@@ -21,16 +21,17 @@ public class ResiProcessingJobLauncher {
     private final Job resiProcessingJob;
     private final MeterRegistry meterRegistry;
 
-    @Scheduled(cron= "${cron.resi-processing-job:* * */3 * * *}", zone = "Asia/Jakarta")
+    @Scheduled(cron= "${cron.resi-processing-job:0 0 */3 * * *}", zone = "Asia/Jakarta")
     @CacheEvict(value = "resi", allEntries = true)
     public void launchResiProcessingJob() {
         try {
+            long timestamp = System.currentTimeMillis();
             JobParameters jobParameters = new JobParametersBuilder()
-                    .addLong("timestamp", System.currentTimeMillis())
+                    .addLong("timestamp", timestamp)
                     .toJobParameters();
 
             JobExecution jobExecution = jobLauncher.run(resiProcessingJob, jobParameters);
-            log.info("Job launched with execution ID: {}", jobExecution.getId());
+            log.info("Job launched with execution ID: {} timestamp: {}", jobExecution.getId(), timestamp);
             meterRegistry.counter("resi.job.launched").increment();
 
         } catch (Exception e) {
