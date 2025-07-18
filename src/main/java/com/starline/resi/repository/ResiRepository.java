@@ -31,5 +31,7 @@ public interface ResiRepository extends JpaRepository<Resi, String> {
 
     int deleteAllByCreatedDateBefore(LocalDateTime createdDate);
 
+    int deleteAllBySubscriptionExpiryDateBefore(LocalDateTime subscriptionExpiryDate);
+
     Optional<Resi> findByTrackingNumberAndUserId(String trackingNumber, Long userId);
 }

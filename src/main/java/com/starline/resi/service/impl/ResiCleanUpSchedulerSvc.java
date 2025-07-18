@@ -32,4 +32,15 @@ public class ResiCleanUpSchedulerSvc implements ResiCleanUpScheduler {
         int deleted = resiRepository.deleteAllByCreatedDateBefore(cutOffDate);
         log.info("[✓] Deleted {} Resi entries older than {}", deleted, cutOffDate);
     }
+
+    @Transactional
+    @Modifying
+    @Scheduled(cron = "${cron.awb-subscription-expired-cleanup:59 59 23 * * *}", zone = "Asia/Jakarta")
+    @Override
+    public void cleanUpResiWithExpiredSubscription() {
+        LocalDateTime cutOffDate = LocalDateTime.now();
+        log.info("[✓] Starting to delete AWB with expired subscription. Run on {}", cutOffDate);
+        int deleted = resiRepository.deleteAllBySubscriptionExpiryDateBefore(cutOffDate);
+        log.info("[✓] Deleted {} AWB entries with subscription expired date before {}", deleted, cutOffDate);
+    }
 }

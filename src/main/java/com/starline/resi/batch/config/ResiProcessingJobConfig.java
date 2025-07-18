@@ -4,6 +4,7 @@ import com.starline.resi.dto.resi.ResiUpdateResult;
 import com.starline.resi.model.Resi;
 import io.opentelemetry.context.Context;
 import jakarta.persistence.EntityManagerFactory;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.ExitStatus;
@@ -28,6 +29,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 
 @Configuration
@@ -71,7 +73,8 @@ public class ResiProcessingJobConfig {
     @StepScope
     public JpaPagingItemReader<Resi> resiJpaReader() {
         JpaPagingItemReader<Resi> reader = new JpaPagingItemReader<>();
-        reader.setQueryString("SELECT r FROM Resi r");
+        reader.setQueryString("SELECT r FROM Resi r WHERE r.subscriptionExpiryDate > :cutOffDate");
+        reader.setParameterValues(Map.of("cutOffDate", LocalDateTime.now()));
         reader.setEntityManagerFactory(entityManagerFactory);
         reader.setPageSize(500); // read in chunks
         reader.setSaveState(false);
@@ -95,12 +98,12 @@ public class ResiProcessingJobConfig {
     public StepExecutionListener stepExecutionListener() {
         return new StepExecutionListener() {
             @Override
-            public void beforeStep(StepExecution stepExecution) {
+            public void beforeStep(@NonNull StepExecution stepExecution) {
                 log.info("Starting step: {}", stepExecution.getStepName());
             }
 
             @Override
-            public ExitStatus afterStep(StepExecution stepExecution) {
+            public ExitStatus afterStep(@NonNull StepExecution stepExecution) {
                 log.info("Step {} completed. Read: {}, Written: {}, Skipped: {}, Failed: {}",
                         stepExecution.getStepName(),
                         stepExecution.getReadCount(),
@@ -115,15 +118,16 @@ public class ResiProcessingJobConfig {
     @Bean
     public JobExecutionListener jobExecutionListener() {
         return new JobExecutionListener() {
+
             @Override
-            public void beforeJob(JobExecution jobExecution) {
+            public void beforeJob(@NonNull JobExecution jobExecution) {
                 log.info("Starting job: {} with parameters: {}",
                         jobExecution.getJobInstance().getJobName(),
                         jobExecution.getJobParameters());
             }
 
             @Override
-            public void afterJob(JobExecution jobExecution) {
+            public void afterJob(@NonNull JobExecution jobExecution) {
                 var startTime = Optional.ofNullable(jobExecution.getStartTime()).orElse(LocalDateTime.now());
                 log.info("Job {} completed with status: {}. Duration: {}ms",
                         jobExecution.getJobInstance().getJobName(),

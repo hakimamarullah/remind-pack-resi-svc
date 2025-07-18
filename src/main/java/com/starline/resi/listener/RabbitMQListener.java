@@ -3,6 +3,7 @@ package com.starline.resi.listener;
 
 import com.starline.resi.config.RabbitMQConfig;
 import com.starline.resi.dto.rabbit.ScrappingResultEvent;
+import com.starline.resi.dto.rabbit.enums.ScrappingType;
 import com.starline.resi.dto.resi.ResiUpdateNotification;
 import com.starline.resi.service.NotificationService;
 import com.starline.resi.service.ResiService;
@@ -30,10 +31,15 @@ public class RabbitMQListener {
         log.info("Notification sent for userId: {} {}", event.getUserId(), event.getTrackingNumber());
     }
 
+    @WithSpan
     @RabbitListener(queues = {RabbitMQConfig.SCRAPPING_DONE_QUEUE})
     public void onScrappingDone(ScrappingResultEvent event) {
         log.info("Receive scrapping result for tracking number: {}", event.getTrackingNumber());
-        resiService.handleScrappingResultEvent(event);
+        if (ScrappingType.UPDATE.equals(event.getType())) {
+            resiService.handleScrappingUpdateEvent(event);
+        } else {
+            resiService.handleScrappingResultEvent(event);
+        }
         log.info("Successfully handled scrapping result for tracking number: {}", event.getTrackingNumber());
     }
 }

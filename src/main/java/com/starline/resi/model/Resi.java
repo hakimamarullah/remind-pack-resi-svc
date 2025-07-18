@@ -49,6 +49,10 @@ public class Resi extends BaseEntity {
     @Comment(value = "Last Checkpoint Update time after being processed by job", on = "LAST_CHECKPOINT_UPDATE")
     private LocalDateTime lastCheckpointUpdate;
 
+    @Column(name = "SUBSCRIPTION_EXPIRY_DATE")
+    @Comment(value = "Subscription Expiry Date", on = "SUBSCRIPTION_EXPIRY_DATE")
+    private LocalDateTime subscriptionExpiryDate;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "COURIER_ID")
     @OnDelete(action = OnDeleteAction.SET_NULL)

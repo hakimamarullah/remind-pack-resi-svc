@@ -3,6 +3,8 @@ package com.starline.resi.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.starline.resi.dto.ApiResponse;
+import com.starline.resi.dto.proxy.subscriptions.SubscriptionInfo;
+import com.starline.resi.dto.proxy.subscriptions.SubscriptionStatus;
 import com.starline.resi.dto.rabbit.ScrappingRequestEvent;
 import com.starline.resi.dto.rabbit.ScrappingResultEvent;
 import com.starline.resi.dto.rabbit.enums.ScrappingType;
@@ -12,6 +14,7 @@ import com.starline.resi.dto.resi.ResiUpdateNotification;
 import com.starline.resi.exceptions.DataNotFoundException;
 import com.starline.resi.exceptions.DuplicateDataException;
 import com.starline.resi.exceptions.TooManyActiveResiException;
+import com.starline.resi.feign.SubscriptionProxySvc;
 import com.starline.resi.model.Courier;
 import com.starline.resi.model.Resi;
 import com.starline.resi.repository.CourierRepository;
@@ -25,7 +28,6 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +35,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @RequiredArgsConstructor
@@ -41,11 +42,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class ResiSvc implements ResiService {
 
+    public static final String COURIER_NOT_FOUND_LOG = "Courier {} not found";
     private final ResiRepository resiRepository;
 
     private final CourierRepository courierRepository;
 
     private final RabbitPublisher rabbitPublisher;
+
+    private final SubscriptionProxySvc subscriptionProxySvc;
 
     private final ObjectMapper mapper;
 
@@ -53,11 +57,10 @@ public class ResiSvc implements ResiService {
     private Integer maxResiActive;
 
 
-    @Async
     @Transactional
     @CacheEvict(key = "#payload.userId")
     @Override
-    public void addResiAsync(AddResiRequest payload) {
+    public ApiResponse<Void> addResi(AddResiRequest payload) {
         if (resiRepository.countByUserId(payload.getUserId()) >= maxResiActive) {
             throw new TooManyActiveResiException();
         }
@@ -81,6 +84,8 @@ public class ResiSvc implements ResiService {
 
         rabbitPublisher.publishScrappingRequest(request);
         log.info("Published scrapping request for resi {}", payload.getTrackingNumber());
+
+        return ApiResponse.setResponse(null, "Your AWB is being processed!", 201);
 
     }
 
@@ -106,38 +111,7 @@ public class ResiSvc implements ResiService {
         log.info("Receive scrapping result for resi {}", payload.getTrackingNumber());
         Optional<Courier> courier = courierRepository.findByCode(payload.getCourierCode());
         if (courier.isEmpty()) {
-            log.info("Courier {} not found", payload.getCourierCode());
-            return;
-        }
-        Optional<Resi> existingResi = resiRepository.findByTrackingNumberAndUserId(payload.getTrackingNumber(), payload.getUserId());
-        if (ScrappingType.UPDATE.equals(payload.getType())) {
-            log.info("Update resi {}", payload.getTrackingNumber());
-            ResiUpdateNotification notification = ResiUpdateNotification.builder()
-                    .trackingNumber(payload.getTrackingNumber())
-                    .userId(payload.getUserId())
-                    .lastCheckpoint(payload.getCheckpoint())
-                    .lastCheckpointTime(payload.getTimestamp())
-                    .courierName(courier.get().getName())
-                    .build();
-            AtomicBoolean isSendNotification = new AtomicBoolean(false);
-            existingResi
-                    .ifPresent(resi -> {
-                        isSendNotification.set(!Objects.equals(payload.getCheckpoint(), resi.getLastCheckpoint()));
-
-                        notification.setPreviousCheckpoint(resi.getLastCheckpoint());
-                        notification.setPreviousCheckpointTime(resi.getOriginalCheckpointTime());
-                        resi.setLastCheckpoint(payload.getCheckpoint());
-                        resi.setOriginalCheckpointTime(payload.getTimestamp());
-                        resi.setLastCheckpointUpdate(LocalDateTime.now());
-                        resiRepository.save(resi);
-
-
-                    });
-
-            if (Boolean.TRUE.equals(isSendNotification.get())) {
-                rabbitPublisher.publishResiUpdateNotification(notification);
-            }
-            log.info("Successfully updated resi {}", payload.getTrackingNumber());
+            log.info(COURIER_NOT_FOUND_LOG, payload.getCourierCode());
             return;
         }
 
@@ -152,12 +126,26 @@ public class ResiSvc implements ResiService {
         }
 
 
+        ApiResponse<List<SubscriptionInfo>> subscriptionInfosResponse = subscriptionProxySvc.getSubscriptionInfoByUserId(payload.getUserId());
+
+        List<SubscriptionInfo> subscriptionInfos = subscriptionInfosResponse.getData();
+        LocalDateTime subscriptionExpiryDate = subscriptionInfos.stream()
+                .filter( it -> Objects.equals(it.getStatus(), SubscriptionStatus.ACTIVE))
+                .findFirst()
+                .map(SubscriptionInfo::getExpiryDate)
+                .orElse(null);
+
+        if (Objects.isNull(subscriptionExpiryDate)) {
+            log.info("User {} has no active subscription", payload.getUserId());
+            return;
+        }
         Resi newResi = new Resi();
         newResi.setTrackingNumber(payload.getTrackingNumber());
         newResi.setUserId(payload.getUserId());
         newResi.setAdditionalValue1(payload.getAdditionalValue1());
         newResi.setLastCheckpoint(payload.getCheckpoint());
         newResi.setOriginalCheckpointTime(payload.getTimestamp());
+        newResi.setSubscriptionExpiryDate(subscriptionExpiryDate);
         newResi.setCourier(courier.get());
         resiRepository.save(newResi);
 
@@ -173,5 +161,44 @@ public class ResiSvc implements ResiService {
         log.info("Successfully added resi {}", payload.getTrackingNumber());
         rabbitPublisher.publishResiUpdateNotification(notification);
         log.info("Success Event sent {}", payload.getTrackingNumber());
+    }
+
+    @Transactional
+    @CacheEvict(key = "#payload.userId")
+    @Override
+    public void handleScrappingUpdateEvent(ScrappingResultEvent payload) {
+        log.info("Receive scrapping result to update AWB -> {}", payload.getTrackingNumber());
+        Optional<Courier> courier = courierRepository.findByCode(payload.getCourierCode());
+        Optional<Resi> existingResi = resiRepository.findByTrackingNumberAndUserId(payload.getTrackingNumber(), payload.getUserId());
+        if (existingResi.isEmpty()) {
+            log.info("Resi {} not found for this user", payload.getTrackingNumber());
+            return;
+        }
+
+        String courierName = courier.map(Courier::getName).orElse(null);
+        ResiUpdateNotification notification = ResiUpdateNotification.builder()
+                .trackingNumber(payload.getTrackingNumber())
+                .userId(payload.getUserId())
+                .lastCheckpoint(payload.getCheckpoint())
+                .lastCheckpointTime(payload.getTimestamp())
+                .courierName(courierName)
+                .build();
+
+        boolean isSendNotification;
+
+        var resi = existingResi.get();
+        isSendNotification = !Objects.equals(payload.getCheckpoint(), resi.getLastCheckpoint());
+
+        notification.setPreviousCheckpoint(resi.getLastCheckpoint());
+        notification.setPreviousCheckpointTime(resi.getOriginalCheckpointTime());
+        resi.setLastCheckpoint(payload.getCheckpoint());
+        resi.setOriginalCheckpointTime(payload.getTimestamp());
+        resi.setLastCheckpointUpdate(LocalDateTime.now());
+        resiRepository.save(resi);
+
+        if (Boolean.TRUE.equals(isSendNotification)) {
+            rabbitPublisher.publishResiUpdateNotification(notification);
+        }
+        log.info("Successfully update resi {}", payload.getTrackingNumber());
     }
 }
