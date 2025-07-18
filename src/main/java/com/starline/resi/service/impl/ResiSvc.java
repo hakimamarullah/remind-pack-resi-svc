@@ -3,6 +3,7 @@ package com.starline.resi.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.starline.resi.dto.ApiResponse;
+import com.starline.resi.dto.proxy.subscriptions.HasActiveSubscription;
 import com.starline.resi.dto.proxy.subscriptions.SubscriptionInfo;
 import com.starline.resi.dto.proxy.subscriptions.SubscriptionStatus;
 import com.starline.resi.dto.rabbit.ScrappingRequestEvent;
@@ -67,6 +68,14 @@ public class ResiSvc implements ResiService {
 
         if (resiRepository.countByTrackingNumberAndUserId(payload.getTrackingNumber(), payload.getUserId()) > 0) {
             throw new DuplicateDataException("Tracking number " + payload.getTrackingNumber() + " already exists for this user");
+        }
+
+        ApiResponse<HasActiveSubscription> checkHasActiveSubscription = subscriptionProxySvc.checkHasActiveSubscription(payload.getUserId());
+        boolean hasActiveSubscription = Optional.ofNullable(checkHasActiveSubscription.getData())
+                .map(HasActiveSubscription::isActiveSubscription)
+                .orElse(false);
+        if (!hasActiveSubscription) {
+            return ApiResponse.setResponse(null, "You don't have an active subscription", 400);
         }
 
         Courier courier = courierRepository.findById(payload.getCourierId())
