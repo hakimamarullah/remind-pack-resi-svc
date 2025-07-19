@@ -35,9 +35,8 @@ public class ResiController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Add new resi for user")
-    public ResponseEntity<ApiResponse<String>> addResi(@RequestBody @Valid AddResiRequest payload) {
-        resiService.addResiAsync(payload);
-        return ApiResponse.setSuccess(messageSource.getMessage("resi.added.message", null, LocaleContextHolder.getLocale())).toResponseEntity();
+    public ResponseEntity<ApiResponse<Void>> addResi(@RequestBody @Valid AddResiRequest payload) {
+        return resiService.addResi(payload).toResponseEntity();
     }
 
     @GetMapping(value = "/users/{userId}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface ResiService {
 
-    void addResiAsync(AddResiRequest payload);
+    ApiResponse<Void> addResi(AddResiRequest payload);
 
     ApiResponse<List<ResiInfo>> getResiInfoByUserId(Long userId);
 
@@ -17,4 +17,6 @@ public interface ResiService {
 
     void handleScrappingResultEvent(ScrappingResultEvent payload);
 
+
+    void handleScrappingUpdateEvent(ScrappingResultEvent payload);
 }

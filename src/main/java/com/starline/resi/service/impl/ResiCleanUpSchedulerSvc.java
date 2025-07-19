@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -31,5 +32,16 @@ public class ResiCleanUpSchedulerSvc implements ResiCleanUpScheduler {
         LocalDateTime cutOffDate = LocalDateTime.now().minusDays(maxDaysActive);
         int deleted = resiRepository.deleteAllByCreatedDateBefore(cutOffDate);
         log.info("[✓] Deleted {} Resi entries older than {}", deleted, cutOffDate);
+    }
+
+    @Transactional
+    @Modifying
+    @Scheduled(cron = "${cron.awb-subscription-expired-cleanup:59 59 23 * * *}", zone = "Asia/Jakarta")
+    @Override
+    public void cleanUpResiWithExpiredSubscription() {
+        LocalDate cutOffDate = LocalDate.now();
+        log.info("[✓] Starting to delete AWB with expired subscription. Run on {}", cutOffDate);
+        int deleted = resiRepository.deleteAllBySubscriptionExpiryDateLessThanEqual(cutOffDate);
+        log.info("[✓] Deleted {} AWB entries with subscription expired date before {}", deleted, cutOffDate);
     }
 }
