@@ -14,6 +14,7 @@ import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -51,7 +52,7 @@ public class Resi extends BaseEntity {
 
     @Column(name = "SUBSCRIPTION_EXPIRY_DATE")
     @Comment(value = "Subscription Expiry Date", on = "SUBSCRIPTION_EXPIRY_DATE")
-    private LocalDateTime subscriptionExpiryDate;
+    private LocalDate subscriptionExpiryDate;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "COURIER_ID")

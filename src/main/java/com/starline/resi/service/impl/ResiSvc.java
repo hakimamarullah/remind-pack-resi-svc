@@ -32,6 +32,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -138,7 +139,7 @@ public class ResiSvc implements ResiService {
         ApiResponse<List<SubscriptionInfo>> subscriptionInfosResponse = subscriptionProxySvc.getSubscriptionInfoByUserId(payload.getUserId());
 
         List<SubscriptionInfo> subscriptionInfos = subscriptionInfosResponse.getData();
-        LocalDateTime subscriptionExpiryDate = subscriptionInfos.stream()
+        LocalDate subscriptionExpiryDate = subscriptionInfos.stream()
                 .filter( it -> Objects.equals(it.getStatus(), SubscriptionStatus.ACTIVE))
                 .findFirst()
                 .map(SubscriptionInfo::getExpiryDate)

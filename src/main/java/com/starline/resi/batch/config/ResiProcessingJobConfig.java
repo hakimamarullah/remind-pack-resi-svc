@@ -73,7 +73,7 @@ public class ResiProcessingJobConfig {
     @StepScope
     public JpaPagingItemReader<Resi> resiJpaReader() {
         JpaPagingItemReader<Resi> reader = new JpaPagingItemReader<>();
-        reader.setQueryString("SELECT r FROM Resi r WHERE r.subscriptionExpiryDate > :cutOffDate");
+        reader.setQueryString("SELECT r FROM Resi r WHERE r.subscriptionExpiryDate >= :cutOffDate");
         reader.setParameterValues(Map.of("cutOffDate", LocalDateTime.now()));
         reader.setEntityManagerFactory(entityManagerFactory);
         reader.setPageSize(500); // read in chunks

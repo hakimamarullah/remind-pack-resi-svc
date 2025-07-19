@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
@@ -20,10 +20,10 @@ public class SubscriptionInfo {
     private SubscriptionStatus status;
 
     @JsonFormat(pattern = "dd MMM yyyy")
-    private LocalDateTime effectiveDate;
+    private LocalDate effectiveDate;
 
     @JsonFormat(pattern = "dd MMM yyyy")
-    private LocalDateTime expiryDate;
+    private LocalDate expiryDate;
 
     private String paymentUrl;
 }
