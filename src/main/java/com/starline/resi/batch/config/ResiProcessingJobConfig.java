@@ -28,6 +28,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -74,7 +75,7 @@ public class ResiProcessingJobConfig {
     public JpaPagingItemReader<Resi> resiJpaReader() {
         JpaPagingItemReader<Resi> reader = new JpaPagingItemReader<>();
         reader.setQueryString("SELECT r FROM Resi r WHERE r.subscriptionExpiryDate >= :cutOffDate");
-        reader.setParameterValues(Map.of("cutOffDate", LocalDateTime.now()));
+        reader.setParameterValues(Map.of("cutOffDate", LocalDate.now()));
         reader.setEntityManagerFactory(entityManagerFactory);
         reader.setPageSize(500); // read in chunks
         reader.setSaveState(false);
