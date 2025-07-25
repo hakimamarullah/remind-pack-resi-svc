@@ -1,4 +1,10 @@
 spring:
+  cloud:
+    refresh:
+      enabled: false
+    loadbalancer:
+      eager-load:
+        clients: subscriptions-svc, users-svc, whatsapp-svc
   application:
     name: remind-pack-resi-svc
   config:
