@@ -262,6 +262,7 @@
                                 <arg>-J-XX:MaxRAMPercentage=98.0</arg>
                                 <arg>-H:+ReportExceptionStackTraces</arg>
                                 <arg>-H:IncludeResources=log4j2.component.properties</arg>
+                                <arg>-H:IncludeResources=redis/clients/jedis/.*</arg>
                                 <arg>-H:IncludeResources=application.yml</arg>
                                 <arg>-H:IncludeResources=messages/.*</arg>
                                 <arg>-H:IncludeResources=log4j2.xml</arg>
