@@ -7,7 +7,7 @@ spring:
       enabled: false
     loadbalancer:
       eager-load:
-        clients: subscriptions-svc, users-svc, whatsapp-svc
+        clients: remind-pack-subscriptions-svc, remind-pack-users-svc, whatsapp-svc
   application:
     name: remind-pack-resi-svc
   config:
@@ -43,3 +43,10 @@ management:
     propagation:
       produce: w3c,b3,b3_multi
       consume: w3c
+
+srv:
+  feign:
+    names:
+      whatsapp: whatsapp-svc
+      users: remind-pack-users-svc
+      subscriptions: remind-pack-subscriptions-svc
