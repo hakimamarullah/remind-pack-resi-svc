@@ -11,7 +11,6 @@ import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +24,7 @@ public class RabbitMQListener {
     private final ResiService resiService;
 
 
-    @RegisterReflectionForBinding
+
     @WithSpan
     @RabbitListener(queues = {RabbitMQConfig.RESI_SUCCESS_QUEUE})
     public void receiveMessage(@Payload ResiUpdateNotification event) {
@@ -34,7 +33,7 @@ public class RabbitMQListener {
         log.info("Notification sent for userId: {} {}", event.getUserId(), event.getTrackingNumber());
     }
 
-    @RegisterReflectionForBinding
+
     @WithSpan
     @RabbitListener(queues = {RabbitMQConfig.SCRAPPING_DONE_QUEUE})
     public void onScrappingDone(@Payload ScrappingResultEvent event) {
