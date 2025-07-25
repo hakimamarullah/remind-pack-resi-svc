@@ -85,15 +85,15 @@
             <AppenderRef ref="HibernateFile"/>
         </Logger>
 
-        <Logger name="org.hibernate.SQL" level="debug" additivity="false">
+        <Logger name="org.hibernate.SQL" level="info" additivity="false">
             <AppenderRef ref="HibernateFile"/>
         </Logger>
 
-        <Logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="trace" additivity="false">
+        <Logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="info" additivity="false">
             <AppenderRef ref="HibernateFile"/>
         </Logger>
 
-        <Logger name="org.hibernate.type.descriptor.sql.BasicExtractor" level="trace" additivity="false">
+        <Logger name="org.hibernate.type.descriptor.sql.BasicExtractor" level="info" additivity="false">
             <AppenderRef ref="HibernateFile"/>
         </Logger>
 

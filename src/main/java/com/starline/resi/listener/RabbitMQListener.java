@@ -11,6 +11,8 @@ import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,17 +25,19 @@ public class RabbitMQListener {
     private final ResiService resiService;
 
 
+    @RegisterReflectionForBinding
     @WithSpan
     @RabbitListener(queues = {RabbitMQConfig.RESI_SUCCESS_QUEUE})
-    public void receiveMessage(ResiUpdateNotification event) {
+    public void receiveMessage(@Payload ResiUpdateNotification event) {
         log.info("Receive notification for userId: {} and tracking number: {} {}", event.getUserId(), event.getTrackingNumber(), event.getCourierName());
         notificationService.sendCheckpointUpdateNotification(event);
         log.info("Notification sent for userId: {} {}", event.getUserId(), event.getTrackingNumber());
     }
 
+    @RegisterReflectionForBinding
     @WithSpan
     @RabbitListener(queues = {RabbitMQConfig.SCRAPPING_DONE_QUEUE})
-    public void onScrappingDone(ScrappingResultEvent event) {
+    public void onScrappingDone(@Payload ScrappingResultEvent event) {
         log.info("Receive scrapping result for tracking number: {}", event.getTrackingNumber());
         if (ScrappingType.UPDATE.equals(event.getType())) {
             resiService.handleScrappingUpdateEvent(event);
