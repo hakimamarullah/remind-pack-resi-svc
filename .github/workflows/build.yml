@@ -1,16 +1,10 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# This workflow will build a Java project with Maven, build Docker image, and deploy to VPS
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
 
 name: Build and Deploy to VPS
 
 on:
   push:
-    branches: [ "master" ]
     tags: [ "v*" ]  # Trigger on tags
 
 jobs:
@@ -20,9 +14,18 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     environment: production
     runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-name: ${{ vars.DOCKER_IMAGE_NAME }}
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
+
+      - name: Set up JDK (if needed for build context)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'  # Adjust to your Java version
+          distribution: 'temurin'
 
       - name: Extract metadata
         id: meta
@@ -51,26 +54,36 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+      - name: Image digest
+        run: echo ${{ steps.build.outputs.digest }}
 
   deploy:
     name: Deploy to VPS
-    # Only deploy on master branch pushes
-    if: github.ref == 'refs/heads/master'
     environment: production
     runs-on: ubuntu-latest
+    needs: build_and_push  # Wait for build job to complete
+    if: success()  # Only run if build was successful
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
 
       - name: Set deployment info
+        id: deploy-info
         run: |
-          # Set deployment info using latest tag
-          echo "IMAGE_NAME=${{ vars.DOCKER_IMAGE_NAME }}" >> deployment.env
-          echo "SERVICE_NAME=${{ vars.SERVICE_NAME }}" >> deployment.env
-          echo "IMAGE_TAG=${{ vars.DOCKER_IMAGE_NAME }}:latest" >> deployment.env
+          # Extract tag name from GitHub ref
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "IMAGE_NAME=${{ needs.build_and_push.outputs.image-name }}" >> $GITHUB_OUTPUT
+          echo "IMAGE_TAG_LATEST=${{ needs.build_and_push.outputs.image-name }}:latest" >> $GITHUB_OUTPUT
+          echo "IMAGE_TAG_VERSION=${{ needs.build_and_push.outputs.image-name }}:$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "SERVICE_NAME=${{ vars.SERVICE_NAME }}" >> $GITHUB_OUTPUT
           
           echo "Deployment info:"
-          cat deployment.env
+          echo "Tag: $TAG_NAME"
+          echo "Image: ${{ needs.build_and_push.outputs.image-name }}"
+          echo "Latest tag: ${{ needs.build_and_push.outputs.image-name }}:latest"
+          echo "Version tag: ${{ needs.build_and_push.outputs.image-name }}:$TAG_NAME"
+          echo "Service: ${{ vars.SERVICE_NAME }}"
 
       - name: Copy deployment script to VPS
         uses: appleboy/scp-action@v0.1.7
@@ -85,21 +98,34 @@ jobs:
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
         env:
-          IMAGE_NAME: ${{ vars.DOCKER_IMAGE_NAME }}
-          SERVICE_NAME: ${{ vars.SERVICE_NAME }}
-          IMAGE_TAG: ${{ vars.DOCKER_IMAGE_NAME }}:latest
+          IMAGE_NAME: ${{ steps.deploy-info.outputs.IMAGE_NAME }}
+          SERVICE_NAME: ${{ steps.deploy-info.outputs.SERVICE_NAME }}
+          IMAGE_TAG_LATEST: ${{ steps.deploy-info.outputs.IMAGE_TAG_LATEST }}
+          IMAGE_TAG_VERSION: ${{ steps.deploy-info.outputs.IMAGE_TAG_VERSION }}
+          TAG_NAME: ${{ steps.deploy-info.outputs.TAG_NAME }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
           port: ${{ secrets.VPS_PORT || 22 }}
-          envs: IMAGE_NAME,SERVICE_NAME,IMAGE_TAG
+          envs: IMAGE_NAME,SERVICE_NAME,IMAGE_TAG_LATEST,IMAGE_TAG_VERSION,TAG_NAME
           script: |
             # Make script executable
             chmod +x /tmp/scripts/deploy.sh
             
-            echo "Deploying with image: $IMAGE_TAG"
+            echo "Deployment started..."
+            echo "Tag: $TAG_NAME"
+            echo "Image Name: $IMAGE_NAME"
+            echo "Latest Image: $IMAGE_TAG_LATEST"
+            echo "Version Image: $IMAGE_TAG_VERSION"
             echo "Service: $SERVICE_NAME"
             
-            # Run deployment script
-            /tmp/scripts/deploy.sh "$IMAGE_TAG" "$SERVICE_NAME"
+            # Pull the latest image to ensure we have it
+            echo "Pulling Docker image..."
+            docker pull $IMAGE_TAG_LATEST
+            
+            # Run deployment script with the latest tag
+            echo "Running deployment script..."
+            /tmp/scripts/deploy.sh "$IMAGE_TAG_LATEST" "$SERVICE_NAME"
+            
+            echo "Deployment completed!"

@@ -8,6 +8,7 @@ import com.starline.resi.service.RabbitPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
@@ -16,6 +17,11 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@RegisterReflectionForBinding({
+        ResiUpdateNotification.class,
+        ScrappingRequestEvent.class
+
+})
 public class RabbitMQPublisher implements RabbitPublisher {
 
 
@@ -40,6 +46,7 @@ public class RabbitMQPublisher implements RabbitPublisher {
                 event
         );
     }
+
 
     @Async
     @Retryable(backoff = @Backoff(delay = 3000), maxAttempts = 5)

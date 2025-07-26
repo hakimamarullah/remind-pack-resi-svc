@@ -1,5 +1,52 @@
 spring:
+  batch:
+    job:
+      enabled: false
+  cloud:
+    refresh:
+      enabled: false
+    loadbalancer:
+      eager-load:
+        clients: remind-pack-subscriptions-svc, remind-pack-users-svc, whatsapp-svc
   application:
     name: remind-pack-resi-svc
   config:
     import: optional:configserver:${SPRING_CLOUD_CONFIG_URI:http://localhost:8888}
+
+
+otel:
+  traces:
+    exporter: none
+  metrics:
+    exporter: none
+  logs:
+    exporter: console
+  instrumentation:
+    micrometer:
+      enabled: true
+    http:
+      client:
+        emit-experimental-telemetry: true
+  propagators: "tracecontext,baggage,b3"
+
+management:
+  otlp:
+    tracing:
+      export:
+        enabled: true
+      headers:
+        x-b3-flags: "1"
+  tracing:
+    baggage:
+      correlation:
+        enabled: true
+    propagation:
+      produce: w3c,b3,b3_multi
+      consume: w3c
+
+srv:
+  feign:
+    names:
+      whatsapp: whatsapp-svc
+      users: remind-pack-users-svc
+      subscriptions: remind-pack-subscriptions-svc

@@ -5,7 +5,7 @@
         <Property name="LOG_PATH">${env:LOG_FILE_PATH:-./logs}</Property>
         <Property name="LOG_SIZE">${env:LOG_FILE_SIZE:-50MB}</Property>
         <Property name="LOG_ROLLOVER">${env:LOG_ROLLOVER_COUNT:-10}</Property>
-        <Property name="APP_NAME">${spring:spring.application.name:-scrapper-svc}</Property>
+        <Property name="APP_NAME">${env:SPRING_APPLICATION_NAME:-remind-pack-resi-svc}</Property>
         <Property name="UUID">${spring:random.uuid}</Property>
     </Properties>
 
@@ -15,11 +15,11 @@
             <PatternLayout pattern="${LOG_PATTERN}"/>
         </Console>
 
-
+        <OpenTelemetry name="OpenTelemetryAppender"/>
         <!-- Main Application Rolling File -->
         <RollingFile name="AppFile"
-                     fileName="${LOG_PATH}/${APP_NAME}@${UUID}.log"
-                     filePattern="${LOG_PATH}/${APP_NAME}@${UUID}-%d{yyyy-MM-dd}-%i.log.gz"
+                     fileName="${LOG_PATH}/${APP_NAME}.log"
+                     filePattern="${LOG_PATH}/${APP_NAME}-%d{yyyy-MM-dd}-%i.log.gz"
                      immediateFlush="false"
                      bufferedIO="true"
                      bufferSize="16384">
@@ -30,7 +30,7 @@
             </Policies>
             <DefaultRolloverStrategy max="${LOG_ROLLOVER}">
                 <Delete basePath="${LOG_PATH}" maxDepth="2">
-                    <IfFileName glob="${APP_NAME}@*.log.gz"/>
+                    <IfFileName glob="${APP_NAME}*.log.gz"/>
                     <IfLastModified age="30d"/>
                 </Delete>
             </DefaultRolloverStrategy>
@@ -38,8 +38,8 @@
 
         <!-- Hibernate-specific Rolling File -->
         <RollingFile name="HibernateFile"
-                     fileName="${LOG_PATH}/${APP_NAME}-hibernate@${UUID}.log"
-                     filePattern="${LOG_PATH}/${APP_NAME}-hibernate@${UUID}-%d{yyyy-MM-dd}-%i.log.gz"
+                     fileName="${LOG_PATH}/${APP_NAME}-hibernate.log"
+                     filePattern="${LOG_PATH}/${APP_NAME}-hibernate-%d{yyyy-MM-dd}-%i.log.gz"
                      immediateFlush="false"
                      bufferedIO="true"
                      bufferSize="8192">
@@ -50,7 +50,7 @@
             </Policies>
             <DefaultRolloverStrategy max="${LOG_ROLLOVER}">
                 <Delete basePath="${LOG_PATH}" maxDepth="2">
-                    <IfFileName glob="${APP_NAME}-hibernate@*.log.gz"/>
+                    <IfFileName glob="${APP_NAME}-hibernate*.log.gz"/>
                     <IfLastModified age="30d"/>
                 </Delete>
             </DefaultRolloverStrategy>
@@ -60,6 +60,10 @@
     <Loggers>
         <!-- Application loggers - to main file -->
         <Logger name="com.starline.resi" level="debug" additivity="false">
+            <AppenderRef ref="AppFile"/>
+        </Logger>
+
+        <Logger name="com.starline.resi.batch" level="debug" additivity="false">
             <AppenderRef ref="AppFile"/>
         </Logger>
 
@@ -81,15 +85,15 @@
             <AppenderRef ref="HibernateFile"/>
         </Logger>
 
-        <Logger name="org.hibernate.SQL" level="debug" additivity="false">
+        <Logger name="org.hibernate.SQL" level="info" additivity="false">
             <AppenderRef ref="HibernateFile"/>
         </Logger>
 
-        <Logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="trace" additivity="false">
+        <Logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="info" additivity="false">
             <AppenderRef ref="HibernateFile"/>
         </Logger>
 
-        <Logger name="org.hibernate.type.descriptor.sql.BasicExtractor" level="trace" additivity="false">
+        <Logger name="org.hibernate.type.descriptor.sql.BasicExtractor" level="info" additivity="false">
             <AppenderRef ref="HibernateFile"/>
         </Logger>
 
@@ -103,6 +107,7 @@
         <Root level="error">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="AppFile"/>
+            <AppenderRef ref="OpenTelemetryAppender" level="all"/>
         </Root>
     </Loggers>
 </Configuration>

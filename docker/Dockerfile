@@ -1,52 +1,32 @@
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM ghcr.io/graalvm/graalvm-community:21 AS builder
+
+
 WORKDIR /opt/app
 
 # Copy Maven wrapper and pom.xml (relative to project root)
-COPY .mvn ./.mvn
+COPY .mvn/ .mvn/
 COPY mvnw pom.xml lombok.config ./
 
 RUN chmod +x ./mvnw
 
 # Copy source code
 COPY src/ ./src/
-RUN ./mvnw clean install -DskipTests
+RUN ./mvnw clean install -Pnative -DskipTests
 
-FROM eclipse-temurin:21 AS jre-build
-WORKDIR /opt/app
-COPY --from=builder /opt/app/target/*.jar app.jar
-
-RUN jar xf app.jar
-RUN ${JAVA_HOME}/bin/jdeps --ignore-missing-deps -q  \
-    --recursive  \
-    --multi-release 21  \
-    --print-module-deps  \
-    --class-path 'BOOT-INF/lib/*'  \
-    app.jar > deps.info
-
-RUN ${JAVA_HOME}/bin/jlink \
-         --add-modules $(cat deps.info) \
-         --strip-debug \
-         --no-man-pages \
-         --no-header-files \
-         --compress=2 \
-         --output /javaruntime
 
 FROM debian:bookworm-slim
 
 # Create non-root user
 RUN groupadd -r spring && useradd -r -g spring spring
 
-ENV JAVA_HOME=/opt/java/openjdk
-ENV PATH="${JAVA_HOME}/bin:${PATH}"
 ENV LOG_DIR=/opt/app/logs
 
-COPY --from=jre-build /javaruntime $JAVA_HOME
+
 
 # Copy jar with fixed name
-COPY --from=jre-build --chown=spring:spring /opt/app/app.jar /opt/app/app.jar
+COPY --from=builder --chown=spring:spring /opt/app/target/resi-svc /opt/app/resi-svc
 
 RUN mkdir -p "$LOG_DIR" && chown -R spring:spring "$LOG_DIR"
-
 # Switch to non-root user
 USER spring
 
@@ -57,4 +37,4 @@ ENV JAVA_OPTS="" \
     JAVA_ARGS=""
 
 # Use exec form with sh to handle environment variables properly
-ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar /opt/app/app.jar $JAVA_ARGS"]
+ENTRYPOINT ["sh", "-c", "exec /opt/app/resi-svc $JAVA_OPTS $JAVA_ARGS"]
